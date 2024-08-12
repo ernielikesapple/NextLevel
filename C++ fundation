@@ -1,0 +1,34 @@
+// Online C++ compiler to run C++ program online
+#include <iostream>
+using namespace std;
+
+void functionByReference (int& a, int&b) {
+    // the memory of the variable x and y is passed into a and b 
+    cout << "the address is NOT changed" << endl;
+    cout << "in this way we can modify the value without a copy of the x, y in the memory space, this method is mostly used, only if we have to modify the address of x or y then we pass the parameter by pointers " << endl;
+    cout << "ByReference the address of a is " << &a << endl;
+    cout << "ByReference the address of b is " << &b << endl;
+}
+
+void functionByPointer (int* a, int* b) {
+    cout << "the address is changed" << endl;
+    cout << "ByPointer the address of a is " << &a << endl;
+    cout << "ByPointer the address of b is " << &b << endl;
+}
+
+
+int main() {
+    // Write C++ code here
+    int x = 1;
+    int y = 2;
+    
+    cout << "the address of x is " << &x << endl;
+    cout << "the address of y is " << &y << endl;
+    
+    
+    functionByReference (x, y);
+    functionByPointer (&x, &y);
+    std::cout << "Try programiz.pro";
+
+    return 0;
+}
