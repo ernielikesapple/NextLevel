@@ -1,0 +1,27 @@
+#include <iostream>
+using namespace std;
+struct TreeNode {
+    // member value
+    int nodeValue;   // the data type can be anything 
+    TreeNode* leftNode;
+    TreeNode* rightNode;
+    
+    // constructor 
+    // TreeNode(int value) {
+    //     nodeValue = value;
+    //     leftNode = nullptr;
+    //     rightNode = nullptr;
+    // }
+
+    // or we can write above code into one line
+    TreeNode(int value):  nodeValue(value), leftNode(nullptr),rightNode(nullptr) {}
+};
+
+int main() {
+    // Write C++ code here
+    
+    TreeNode myTreeNode(5);
+ 
+
+    return 0;
+}
