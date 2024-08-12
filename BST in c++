@@ -18,6 +18,27 @@ struct TreeNode {
     TreeNode(int value):  nodeValue(value), leftNode(nullptr),rightNode(nullptr) {}
 };
 
+// in order to create an actual tree with root node so here we create a class of BSTree
+
+class BSTree {
+    public:
+    // constructor inside:
+        // BSTree () {
+        //     rootAddress = nullptr;
+        // }
+        
+        BSTree(): rootAddress(nullptr) {}
+        
+        // BSTree (TreeNode* rootNode) {
+        //     rootAddress = rootNode;
+        // }
+        BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
+        
+    private:
+        TreeNode* rootAddress;
+};
+
+
 int main() {
     // Write C++ code here
     
