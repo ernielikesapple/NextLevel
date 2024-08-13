@@ -1,0 +1,78 @@
+Your code is an implementation of a Binary Search Tree (BST) in C++. It defines a `TreeNode` struct representing the nodes of the tree, each holding a value, a pointer to the left child, and a pointer to the right child. The `BSTree` class manages the tree, allowing for operations like insertion and printing.
+
+However, the `Insert` method has a couple of issues:
+
+1. **Infinite Recursion**: The current `Insert` method always checks against `rootAddress->nodeValue`. If the tree has more than one level, the method won't correctly traverse down to the appropriate level. Instead, it will keep comparing against the root, potentially leading to infinite recursion or incorrect behavior.
+
+2. **Incorrect Node Assignment**: When inserting a node, the code incorrectly assigns `node->leftNode` or `node->rightNode` instead of the actual node itself.
+
+Here's how you can fix these issues:
+
+1. Modify the `Insert` method to properly traverse the tree.
+2. Fix the node assignment during insertion.
+
+Here’s the corrected `Insert` method:
+
+```cpp
+void BSTree::Insert(TreeNode* node) {
+    TreeNode* currentNode = rootAddress;
+    while (currentNode != nullptr) {
+        if (node->nodeValue < currentNode->nodeValue) {
+            if (currentNode->leftNode == nullptr) {
+                currentNode->leftNode = node;
+                return;
+            } else {
+                currentNode = currentNode->leftNode;
+            }
+        } else if (node->nodeValue > currentNode->nodeValue) {
+            if (currentNode->rightNode == nullptr) {
+                currentNode->rightNode = node;
+                return;
+            } else {
+                currentNode = currentNode->rightNode;
+            }
+        } else {
+            // If the node already exists in the tree, do nothing
+            return;
+        }
+    }
+}
+```
+
+### Explanation:
+
+- The `Insert` method now correctly traverses the tree, starting from the root and moving left or right based on the value of the node to be inserted.
+- If it finds the correct position (i.e., a `nullptr` where the node should go), it assigns the node to either the left or right child.
+- This approach avoids infinite recursion and ensures that nodes are correctly inserted according to BST properties.
+
+### Updated Example:
+
+With this change, your main function will work as expected, inserting nodes into the BST and printing it.
+
+```cpp
+int main() {
+    TreeNode myTreeNode(5); // Root Node
+    TreeNode myTreeLeftNode(3); // Left Child Node
+    TreeNode myTreeRightNode(8); // Right Child Node
+    
+    myTreeNode.leftNode = &myTreeLeftNode;
+    myTreeNode.rightNode = &myTreeRightNode;
+    
+    cout << "Print a single node value " << myTreeNode.leftNode->nodeValue  << endl;
+    
+    BSTree emptyTree {};
+    emptyTree.Print();
+    
+    BSTree threeNodesTree{&myTreeNode};
+    threeNodesTree.Print();
+    
+    TreeNode node(4); 
+    threeNodesTree.Insert(&node);
+    
+    threeNodesTree.Print();
+
+    return 0;
+}
+```
+
+This should give you the correct output for the BST with proper insertion.
