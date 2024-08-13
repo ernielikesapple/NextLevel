@@ -34,10 +34,28 @@ class BSTree {
         // }
         BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
         
+        void Print();   // to print the tree as string, each node is "{ nodeValue }"
+        
     private:
-        TreeNode* rootAddress;
+        TreeNode* rootAddress; // private class member can only access through public method 
+        string printTreeNode(TreeNode* node);
+        
 };
 
+void BSTree::Print() {
+    if (this->rootAddress == nullptr) {
+        cout << "{}" << endl;
+    } else {
+        cout << this->printTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    }
+}
+
+string BSTree::printTreeNode(TreeNode* node) {
+    string leftNodeString = node->leftNode ? this->printTreeNode(node) : "{}"; 
+    string rightNodeString = node->rightNode ? this->printTreeNode(node) : "{}"; 
+    string result = to_string(node->nodeValue);
+    return result;
+}
 
 int main() {
     // Write C++ code here
