@@ -1,5 +1,5 @@
 // todo: try to solve leetcode 701 (BST insertion)
-
+// todo: using chatgpt hints to fix the Segmentation fault error
 #include <iostream>
 using namespace std;
 struct TreeNode {
@@ -36,35 +36,68 @@ class BSTree {
         BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
         
         void Print();   // to print the tree as string, each node is "{ nodeValue }"
-    
+        void Insert(TreeNode* node); // insert a node to the BST
     // void Print() {
     //     if (this->rootAddress == nullptr) {
     //         cout << "{}" << endl;
     //     } else {
-    //         cout << this->printTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    //         cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
     //     }
     // }
     // we can define the class outside the class as well
     
     private:
         TreeNode* rootAddress; // private class member can only access through public method 
-        string printTreeNode(TreeNode* node);
+        string PrintTreeNode(TreeNode* node);
 };
 
 void BSTree::Print() {
+    cout << "Print the whole tree as string ";
     if (this->rootAddress == nullptr) {
         cout << "{}" << endl;
     } else {
-        cout << this->printTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+        cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
     }
 }
 
-string BSTree::printTreeNode(TreeNode* node) {
-    string leftNodeString = (node->leftNode!=nullptr) ? this->printTreeNode(node->leftNode) : "{}";  // we need to pass the child do the recussion
-    string rightNodeString = node->rightNode ? this->printTreeNode(node->rightNode) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
+string BSTree::PrintTreeNode(TreeNode* node) {
+    string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode) : "{}";  // we need to pass the child do the recussion
+    string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
     string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
     
     return result;
+}
+
+void BSTree::Insert(TreeNode* node) {
+    if (this->rootAddress == nullptr) {
+         // here the node is already passing by a pointer (the memory address) so we do not need to use the & symbol again
+        this->rootAddress = node;
+        // use new keyword to create variable when we still want to use this variable out of the scope
+        
+        // BSTree newNode(node); we can not write in this way since this is class method already, there is already a class initialized so we need to this keyword to access the instance
+        return;
+    }
+    
+    if (this->rootAddress->nodeValue > node->nodeValue) {
+        // if the new node value is smaller than the root node we need to insert this new to the left child tree
+        if (this->rootAddress->leftNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            this->rootAddress->leftNode =  node->leftNode;
+        } else {
+            this->Insert(node);
+        }
+        return;
+    } else if(this->rootAddress->nodeValue == node->nodeValue) {
+        return;
+    } else if(this->rootAddress->nodeValue < node->nodeValue) {
+        if (this->rootAddress->rightNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            this->rootAddress->rightNode =  node->rightNode;
+        } else {
+            this->Insert(node);
+        }
+        return;
+    }
 }
 
 int main() {
@@ -79,7 +112,7 @@ int main() {
     // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
     myTreeNode.rightNode = &myTreeRightNode;
     // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
-    cout << myTreeNode.leftNode -> nodeValue  << endl;
+    cout << "Print a single node value " << myTreeNode.leftNode -> nodeValue  << endl;
     
     // BSTree emptyTree(nullptr);
     BSTree emptyTree {}; // above line can be also in this way, using the  {} to initializing the instance of this class
@@ -87,6 +120,11 @@ int main() {
     
     // to print the tree using { {}, nodeValue, {} } this format 
     BSTree threeNodesTree{&myTreeNode};
+    threeNodesTree.Print();
+    
+    TreeNode node(4); 
+    threeNodesTree.Insert(&node);
+    
     threeNodesTree.Print();
 
     return 0;
