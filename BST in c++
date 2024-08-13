@@ -35,11 +35,19 @@ class BSTree {
         BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
         
         void Print();   // to print the tree as string, each node is "{ nodeValue }"
-        
+    
+    // void Print() {
+    //     if (this->rootAddress == nullptr) {
+    //         cout << "{}" << endl;
+    //     } else {
+    //         cout << this->printTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    //     }
+    // }
+    // we can define the class outside the class as well
+    
     private:
         TreeNode* rootAddress; // private class member can only access through public method 
         string printTreeNode(TreeNode* node);
-        
 };
 
 void BSTree::Print() {
@@ -51,9 +59,10 @@ void BSTree::Print() {
 }
 
 string BSTree::printTreeNode(TreeNode* node) {
-    string leftNodeString = node->leftNode ? this->printTreeNode(node) : "{}"; 
-    string rightNodeString = node->rightNode ? this->printTreeNode(node) : "{}"; 
-    string result = to_string(node->nodeValue);
+    string leftNodeString = (node->leftNode!=nullptr) ? this->printTreeNode(node->leftNode) : "{}";  // we need to pass the child do the recussion
+    string rightNodeString = node->rightNode ? this->printTreeNode(node->rightNode) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
+    string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
+    
     return result;
 }
 
@@ -64,13 +73,20 @@ int main() {
     TreeNode myTreeLeftNode(3); // Left Child Node
     TreeNode myTreeRightNode(8); // Right Child Node
     
-    
     // node connection, this is a very important step to build a binary tree using linked list idea
     myTreeNode.leftNode = &myTreeLeftNode; // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
     // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
     myTreeNode.rightNode = &myTreeRightNode;
     // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
     cout << myTreeNode.leftNode -> nodeValue  << endl;
+    
+    // BSTree emptyTree(nullptr);
+    BSTree emptyTree {}; // above line can be also in this way, using the  {} to initializing the instance of this class
+    emptyTree.Print();
+    
+    // to print the tree using { {}, nodeValue, {} } this format 
+    BSTree threeNodesTree{&myTreeNode};
+    threeNodesTree.Print();
 
     return 0;
 }
