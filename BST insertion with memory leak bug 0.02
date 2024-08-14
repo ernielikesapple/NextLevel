@@ -47,7 +47,7 @@ class BSTree {
     private:
         TreeNode* rootAddress; // private class member can only access through public method 
         string PrintTreeNode(TreeNode* node);
-        void Insert(TreeNode* node, TreeNode*& currentRoot);
+        void InsertRecursiveForSubTree(TreeNode* node, TreeNode*& currentRoot);
 };
 
 void BSTree::Print() {
@@ -71,11 +71,11 @@ void BSTree::Insert(TreeNode* newNode) {
     if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
         this->rootAddress = newNode;
     } else {
-        this-> Insert(newNode, this->rootAddress);
+        this-> InsertRecursiveForSubTree(newNode, this->rootAddress);
     }
 }
 
-void BSTree::Insert(TreeNode* node, TreeNode*& currentRoot) {
+void BSTree::InsertRecursiveForSubTree(TreeNode* node, TreeNode*& currentRoot) {
     // since we need to modify the value passing by outside the scope so we need to pass this current root node by reference to modify the original content
     
     if (currentRoot->nodeValue > node->nodeValue) {
@@ -84,7 +84,7 @@ void BSTree::Insert(TreeNode* node, TreeNode*& currentRoot) {
             // if this node does not have a left node then do the insertion 
             currentRoot->leftNode = node;
         } else {
-            this->Insert(node, currentRoot->leftNode);
+            this->InsertRecursiveForSubTree(node, currentRoot->leftNode);
         }
         return;
     } else if(currentRoot->nodeValue == node->nodeValue) {
@@ -94,7 +94,7 @@ void BSTree::Insert(TreeNode* node, TreeNode*& currentRoot) {
             // if this node does not have a left node then do the insertion 
             currentRoot->rightNode =  node;
         } else {
-            this->Insert(node, currentRoot->rightNode);
+            this->InsertRecursiveForSubTree(node, currentRoot->rightNode);
         }
         return;
     }
