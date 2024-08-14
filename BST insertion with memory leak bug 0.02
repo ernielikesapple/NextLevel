@@ -1,0 +1,131 @@
+#include <iostream>
+using namespace std;
+struct TreeNode {
+    // member value
+    int nodeValue;   // the data type can be anything 
+    TreeNode* leftNode;
+    TreeNode* rightNode;
+    
+    // constructor 
+    // TreeNode(int value) {
+    //     nodeValue = value;
+    //     leftNode = nullptr;
+    //     rightNode = nullptr;
+    // }
+
+    // or we can write above code into one line
+    TreeNode(int value):  nodeValue(value), leftNode(nullptr),rightNode(nullptr) {}
+};
+
+// in order to create an actual tree with root node so here we create a class of BSTree
+
+class BSTree {
+    public:
+    // constructor inside:
+        // BSTree () {
+        //     rootAddress = nullptr;
+        // }
+        
+        BSTree(): rootAddress(nullptr) {}
+        
+        // BSTree (TreeNode* rootNode) {
+        //     rootAddress = rootNode;
+        // }
+        BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
+        
+        void Print();   // to print the tree as string, each node is "{ nodeValue }"
+        void Insert(TreeNode* newNode); // insert a node to the BST
+    // void Print() {
+    //     if (this->rootAddress == nullptr) {
+    //         cout << "{}" << endl;
+    //     } else {
+    //         cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    //     }
+    // }
+    // we can define the class outside the class as well
+    
+    private:
+        TreeNode* rootAddress; // private class member can only access through public method 
+        string PrintTreeNode(TreeNode* node);
+        void Insert(TreeNode* node, TreeNode*& currentRoot);
+};
+
+void BSTree::Print() {
+    cout << "Print the whole tree as string ";
+    if (this->rootAddress == nullptr) {
+        cout << "{}" << endl;
+    } else {
+        cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    }
+}
+
+string BSTree::PrintTreeNode(TreeNode* node) {
+    string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode) : "{}";  // we need to pass the child do the recussion
+    string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
+    string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
+    
+    return result;
+}
+
+void BSTree::Insert(TreeNode* newNode) {
+    if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
+        this->rootAddress = newNode;
+    } else {
+        this-> Insert(newNode, this->rootAddress);
+    }
+}
+
+void BSTree::Insert(TreeNode* node, TreeNode*& currentRoot) {
+    // since we need to modify the value passing by outside the scope so we need to pass this current root node by reference to modify the original content
+    
+    if (currentRoot->nodeValue > node->nodeValue) {
+        // if the new node value is smaller than the root node we need to insert this new to the left child tree
+        if (currentRoot->leftNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            currentRoot->leftNode = node;
+        } else {
+            this->Insert(node, currentRoot->leftNode);
+        }
+        return;
+    } else if(currentRoot->nodeValue == node->nodeValue) {
+        return;
+    } else if(currentRoot->nodeValue < node->nodeValue) {
+        if (currentRoot->rightNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            currentRoot->rightNode =  node;
+        } else {
+            this->Insert(node, currentRoot->rightNode);
+        }
+        return;
+    }
+}
+
+int main() {
+    // Write C++ code here
+    
+    TreeNode myTreeNode(5); // Root Node
+    TreeNode myTreeLeftNode(3); // Left Child Node
+    TreeNode myTreeRightNode(8); // Right Child Node
+    
+    // node connection, this is a very important step to build a binary tree using linked list idea
+    myTreeNode.leftNode = &myTreeLeftNode; // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
+    // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
+    myTreeNode.rightNode = &myTreeRightNode;
+    // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
+    cout << "Print a single node value " << myTreeNode.leftNode -> nodeValue  << endl;
+    
+    // BSTree emptyTree(nullptr);
+    BSTree emptyTree {}; // above line can be also in this way, using the  {} to initializing the instance of this class
+    emptyTree.Print();
+    
+    // to print the tree using { {}, nodeValue, {} } this format 
+    BSTree threeNodesTree{&myTreeNode};
+    threeNodesTree.Print();
+    
+    TreeNode node(4); 
+    threeNodesTree.Insert(&node);
+    
+    threeNodesTree.Print();
+
+    return 0;
+}
