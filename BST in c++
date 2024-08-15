@@ -1,12 +1,11 @@
-// todo: try to solve leetcode 701 (BST insertion)
-// todo: using chatgpt hints to fix the Segmentation fault error
 #include <iostream>
+#include <memory>
 using namespace std;
 struct TreeNode {
     // member value
     int nodeValue;   // the data type can be anything 
-    TreeNode* leftNode;
-    TreeNode* rightNode;
+    unique_ptr<TreeNode> leftNode; // declare unique pointer to automactically manage the memory
+    unique_ptr<TreeNode> rightNode;
     
     // constructor 
     // TreeNode(int value) {
@@ -33,10 +32,11 @@ class BSTree {
         // BSTree (TreeNode* rootNode) {
         //     rootAddress = rootNode;
         // }
-        BSTree (TreeNode* rootNode): rootAddress(rootNode) {}
+        BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
+        // whenever we need to assign the pointer a new value use move function to modify the actual content directly
         
         void Print();   // to print the tree as string, each node is "{ nodeValue }"
-        void Insert(TreeNode* node); // insert a node to the BST
+        void Insert(unique_ptr<TreeNode> newNode); // insert a node to the BST
     // void Print() {
     //     if (this->rootAddress == nullptr) {
     //         cout << "{}" << endl;
@@ -47,8 +47,10 @@ class BSTree {
     // we can define the class outside the class as well
     
     private:
-        TreeNode* rootAddress; // private class member can only access through public method 
-        string PrintTreeNode(TreeNode* node);
+        unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
+        string PrintTreeNode(const TreeNode* node);
+        // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
+        void InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot);
 };
 
 void BSTree::Print() {
@@ -56,45 +58,47 @@ void BSTree::Print() {
     if (this->rootAddress == nullptr) {
         cout << "{}" << endl;
     } else {
-        cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+        cout << this->PrintTreeNode(this->rootAddress.get()) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+        // .get() method to return a raw pointer from the unique_ptr
     }
 }
 
-string BSTree::PrintTreeNode(TreeNode* node) {
-    string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode) : "{}";  // we need to pass the child do the recussion
-    string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
+string BSTree::PrintTreeNode(const TreeNode* node) {
+    string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode.get()) : "{}";  // we need to pass the child do the recussion
+    string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode.get()) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
     string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
     
     return result;
 }
 
-void BSTree::Insert(TreeNode* node) {
-    if (this->rootAddress == nullptr) {
-         // here the node is already passing by a pointer (the memory address) so we do not need to use the & symbol again
-        this->rootAddress = node;
-        // use new keyword to create variable when we still want to use this variable out of the scope
-        
-        // BSTree newNode(node); we can not write in this way since this is class method already, there is already a class initialized so we need to this keyword to access the instance
-        return;
+void BSTree::Insert(unique_ptr<TreeNode> newNode) {
+    if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
+        this->rootAddress = move(newNode);
+    } else {
+        this-> InsertRecursiveForSubTree(move(newNode), this->rootAddress);
     }
+}
+
+void BSTree::InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot) {
+    // since we need to modify the value passing by outside the scope so we need to pass this current root node by reference to modify the original content
     
-    if (this->rootAddress->nodeValue > node->nodeValue) {
+    if (currentRoot->nodeValue > node->nodeValue) {
         // if the new node value is smaller than the root node we need to insert this new to the left child tree
-        if (this->rootAddress->leftNode == nullptr) {
+        if (currentRoot->leftNode == nullptr) {
             // if this node does not have a left node then do the insertion 
-            this->rootAddress->leftNode =  node->leftNode;
+            currentRoot->leftNode = move(node);
         } else {
-            this->Insert(node);
+            this->InsertRecursiveForSubTree(move(node), currentRoot->leftNode);
         }
         return;
-    } else if(this->rootAddress->nodeValue == node->nodeValue) {
+    } else if(currentRoot->nodeValue == node->nodeValue) {
         return;
-    } else if(this->rootAddress->nodeValue < node->nodeValue) {
-        if (this->rootAddress->rightNode == nullptr) {
+    } else if(currentRoot->nodeValue < node->nodeValue) {
+        if (currentRoot->rightNode == nullptr) {
             // if this node does not have a left node then do the insertion 
-            this->rootAddress->rightNode =  node->rightNode;
+            currentRoot->rightNode = move(node);
         } else {
-            this->Insert(node);
+            this->InsertRecursiveForSubTree(move(node), currentRoot->rightNode);
         }
         return;
     }
@@ -103,27 +107,30 @@ void BSTree::Insert(TreeNode* node) {
 int main() {
     // Write C++ code here
     
-    TreeNode myTreeNode(5); // Root Node
-    TreeNode myTreeLeftNode(3); // Left Child Node
-    TreeNode myTreeRightNode(8); // Right Child Node
+    auto myTreeNode = make_unique<TreeNode>(5); // Root Node, we can use auto let the compiler deduce the type
+    // make_unique return a unique_ptr auto deleting pointer manage the object and return a new instance of TreeNode object
+    // and the type is not a TreeNode anymore it's a unique_ptr<TreeNode>
+    auto myTreeLeftNode = make_unique<TreeNode>(3); // Left Child Node
+    auto myTreeRightNode = make_unique<TreeNode>(8); // Right Child Node
     
     // node connection, this is a very important step to build a binary tree using linked list idea
-    myTreeNode.leftNode = &myTreeLeftNode; // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
+    myTreeNode->leftNode = move(myTreeLeftNode); // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
     // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
-    myTreeNode.rightNode = &myTreeRightNode;
+    // move(), transfer the pointer owner ship without copying the original data 
+    myTreeNode->rightNode = move(myTreeRightNode);
     // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
-    cout << "Print a single node value " << myTreeNode.leftNode -> nodeValue  << endl;
+    cout << "Print a single node value " << myTreeNode->leftNode -> nodeValue  << endl;
     
     // BSTree emptyTree(nullptr);
     BSTree emptyTree {}; // above line can be also in this way, using the  {} to initializing the instance of this class
     emptyTree.Print();
     
     // to print the tree using { {}, nodeValue, {} } this format 
-    BSTree threeNodesTree{&myTreeNode};
+    BSTree threeNodesTree{move(myTreeNode)};
     threeNodesTree.Print();
     
-    TreeNode node(4); 
-    threeNodesTree.Insert(&node);
+    auto node = make_unique<TreeNode>(4); 
+    threeNodesTree.Insert(move(node));
     
     threeNodesTree.Print();
 
