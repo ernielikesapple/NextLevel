@@ -26,7 +26,6 @@ class BSTree {
         // BSTree () {
         //     rootAddress = nullptr;
         // }
-        
         BSTree(): rootAddress(nullptr) {}
         
         // BSTree (TreeNode* rootNode) {
@@ -34,7 +33,6 @@ class BSTree {
         // }
         BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
         // whenever we need to assign the pointer a new value use move function to modify the actual content directly
-        
         void Print();   // to print the tree as string, each node is "{ nodeValue }"
         void Insert(unique_ptr<TreeNode> newNode); // insert a node to the BST
     // void Print() {
@@ -45,12 +43,15 @@ class BSTree {
     //     }
     // }
     // we can define the class outside the class as well
+        bool Contains(unique_ptr<TreeNode> node);
     
     private:
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
         string PrintTreeNode(const TreeNode* node);
         // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
         void InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot);
+        
+        bool ContainsRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode> &root);
 };
 
 void BSTree::Print() {
@@ -67,7 +68,6 @@ string BSTree::PrintTreeNode(const TreeNode* node) {
     string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode.get()) : "{}";  // we need to pass the child do the recussion
     string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode.get()) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
     string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
-    
     return result;
 }
 
