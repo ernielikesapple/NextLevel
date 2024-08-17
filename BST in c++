@@ -43,7 +43,8 @@ class BSTree {
     //     }
     // }
     // we can define the class outside the class as well
-        bool Contains(unique_ptr<TreeNode> node);
+        bool Contains(const unique_ptr<TreeNode>& node);
+        // this method only does not need to modify the original node so pass by a const reference  
     
     private:
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
@@ -51,7 +52,7 @@ class BSTree {
         // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
         void InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot);
         
-        bool ContainsRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode> &root);
+        bool ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root);
 };
 
 void BSTree::Print() {
@@ -104,6 +105,34 @@ void BSTree::InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<Tre
     }
 }
 
+bool BSTree::Contains(const unique_ptr<TreeNode> &node) {
+    if (this->rootAddress == nullptr) {
+        return false;
+    } else {
+        return this->ContainsRecursiveForSubTree(node, this->rootAddress);
+    }
+}
+
+bool BSTree::ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root) {
+    if (root->nodeValue == node->nodeValue) {
+        return true; 
+    } 
+    
+    if (root->nodeValue < node->nodeValue) {
+        if (root->rightNode == nullptr) {
+            return false;
+        } else {
+            return this->ContainsRecursiveForSubTree(node, root->rightNode);
+        }
+    } else {
+        if (root->leftNode == nullptr) {
+            return false;
+        } else {
+            return this->ContainsRecursiveForSubTree(node, root->leftNode);
+        }
+    }
+}
+
 int main() {
     // Write C++ code here
     
@@ -129,10 +158,13 @@ int main() {
     BSTree threeNodesTree{move(myTreeNode)};
     threeNodesTree.Print();
     
-    auto node = make_unique<TreeNode>(4); 
-    threeNodesTree.Insert(move(node));
+    auto nodeFourth = make_unique<TreeNode>(4); 
+    threeNodesTree.Insert(move(nodeFourth));
     
     threeNodesTree.Print();
-
+    
+    auto nodeForCheck = make_unique<TreeNode>(4); 
+    cout << threeNodesTree.Contains(nodeForCheck) << endl; // here you can not pass the nodeFourth to this call again, since after the move method this unique pointer is nullptr
+    
     return 0;
 }
