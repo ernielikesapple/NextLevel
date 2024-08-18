@@ -19,7 +19,7 @@ struct TreeNode {
 };
 
 // in order to create an actual tree with root node so here we create a class of BSTree
-
+template <typename T>
 class BSTree {
     public:
     // constructor inside:
@@ -45,6 +45,8 @@ class BSTree {
     // we can define the class outside the class as well
         bool Contains(const unique_ptr<TreeNode>& node);
         // this method only does not need to modify the original node so pass by a const reference  
+        
+        void Remove(const T& value); // remove the generic T type, and only add value as parameter to avoid create another new in the main
     
     private:
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
