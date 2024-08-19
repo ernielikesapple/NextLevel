@@ -1,0 +1,249 @@
+#include <iostream>
+#include <memory>
+using namespace std;
+struct TreeNode {
+    // member value
+    int nodeValue;   // the data type can be anything 
+    unique_ptr<TreeNode> leftNode; // declare unique pointer to automactically manage the memory
+    unique_ptr<TreeNode> rightNode;
+    
+    // constructor 
+    // TreeNode(int value) {
+    //     nodeValue = value;
+    //     leftNode = nullptr;
+    //     rightNode = nullptr;
+    // }
+
+    // or we can write above code into one line
+    TreeNode(int value):  nodeValue(value), leftNode(nullptr),rightNode(nullptr) {}
+};
+
+// in order to create an actual tree with root node so here we create a class of BSTree
+// template <typename T>   
+class BSTree {
+    public:
+    // constructor inside:
+        // BSTree () {
+        //     rootAddress = nullptr;
+        // }
+        BSTree(): rootAddress(nullptr) {}
+        
+        // BSTree (TreeNode* rootNode) {
+        //     rootAddress = rootNode;
+        // }
+        BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
+        // whenever we need to assign the pointer a new value use move function to modify the actual content directly
+        void Print();   // to print the tree as string, each node is "{ nodeValue }"
+        void Insert(unique_ptr<TreeNode> newNode); // insert a node to the BST
+    // void Print() {
+    //     if (this->rootAddress == nullptr) {
+    //         cout << "{}" << endl;
+    //     } else {
+    //         cout << this->PrintTreeNode(this->rootAddress) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+    //     }
+    // }
+    // we can define the class outside the class as well
+        bool Contains(const unique_ptr<TreeNode>& node);
+        // this method only does not need to modify the original node so pass by a const reference  
+        
+        void Remove(const int& value); // remove the generic T type, and only add value as parameter to avoid create another new in the main
+    
+    private:
+        unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
+        string PrintTreeNode(const TreeNode* node);
+        // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
+        void InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot);
+        
+        bool ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root);
+        
+        void RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot);
+        
+        auto FindMaxSubTree(unique_ptr<TreeNode> currentRoot);
+        auto FindMinSubTree(unique_ptr<TreeNode> currentRoot);
+};
+
+void BSTree::Print() {
+    cout << "Print the whole tree as string ";
+    if (this->rootAddress == nullptr) {
+        cout << "{}" << endl;
+    } else {
+        cout << this->PrintTreeNode(this->rootAddress.get()) << endl; // this key word is pointer to the class so we need  -> to access the class methods
+        // .get() method to return a raw pointer from the unique_ptr
+    }
+}
+
+string BSTree::PrintTreeNode(const TreeNode* node) {
+    string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode.get()) : "{}";  // we need to pass the child do the recussion
+    string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode.get()) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
+    string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
+    return result;
+}
+
+void BSTree::Insert(unique_ptr<TreeNode> newNode) {
+    if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
+        this->rootAddress = move(newNode);
+    } else {
+        this-> InsertRecursiveForSubTree(move(newNode), this->rootAddress);
+    }
+}
+
+void BSTree::InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot) {
+    // since we need to modify the value passing by outside the scope so we need to pass this current root node by reference to modify the original content
+    
+    if (currentRoot->nodeValue > node->nodeValue) {
+        // if the new node value is smaller than the root node we need to insert this new to the left child tree
+        if (currentRoot->leftNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            currentRoot->leftNode = move(node);
+        } else {
+            this->InsertRecursiveForSubTree(move(node), currentRoot->leftNode);
+        }
+        return;
+    } else if(currentRoot->nodeValue == node->nodeValue) {
+        return;
+    } else if(currentRoot->nodeValue < node->nodeValue) {
+        if (currentRoot->rightNode == nullptr) {
+            // if this node does not have a left node then do the insertion 
+            currentRoot->rightNode = move(node);
+        } else {
+            this->InsertRecursiveForSubTree(move(node), currentRoot->rightNode);
+        }
+        return;
+    }
+}
+
+bool BSTree::Contains(const unique_ptr<TreeNode> &node) {
+    if (this->rootAddress == nullptr) {
+        return false;
+    } else {
+        return this->ContainsRecursiveForSubTree(node, this->rootAddress);
+    }
+}
+
+bool BSTree::ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root) {
+    if (root->nodeValue == node->nodeValue) {
+        return true; 
+    } 
+    
+    if (root->nodeValue < node->nodeValue) {
+        if (root->rightNode == nullptr) {
+            return false;
+        } else {
+            return this->ContainsRecursiveForSubTree(node, root->rightNode);
+        }
+    } else {
+        if (root->leftNode == nullptr) {
+            return false;
+        } else {
+            return this->ContainsRecursiveForSubTree(node, root->leftNode);
+        }
+    }
+}
+
+void BSTree::Remove(const int& value) {
+    if (this->rootAddress == nullptr) {
+        return;
+    } else {
+        this->RemoveRecursiveForSubTree(value, move(this->rootAddress));
+    }
+}
+
+void BSTree::RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot) {
+    if (currentRoot->nodeValue == value) {
+        // remove the node 
+        if (currentRoot -> leftNode == nullptr || currentRoot -> rightNode == nullptr) {
+            currentRoot = nullptr;
+        } else if (currentRoot -> leftNode != nullptr || currentRoot -> rightNode == nullptr) {
+             // step 1: find  max value of leftSub tree, set that max value node to nullptr 
+             auto maxValue = this->FindMaxSubTree(move(currentRoot->leftNode));
+             // step 2: change root node value
+             currentRoot -> nodeValue = maxValue;
+        } else {
+            // step 1: find  min value of rightSub tree, set that min value node to nullptr 
+             auto minValue = this->FindMinSubTree(move(currentRoot->rightNode));
+             // step 2:  change root node value
+             currentRoot -> nodeValue = minValue;
+        }
+        return;
+    }    
+    
+    if (value < currentRoot->nodeValue) {
+        if (currentRoot->rightNode == nullptr) {
+            cout << " node value does not exist in the Tree during Remove operations" << endl;
+            return;
+        } else {
+            this->RemoveRecursiveForSubTree(value, move(currentRoot->rightNode));
+        }
+    } else {
+        if (currentRoot->leftNode == nullptr) {
+            cout << " node value does not exist in the Tree during Remove operations" << endl;
+            return;
+        } else {
+            this->RemoveRecursiveForSubTree(value, move(currentRoot->leftNode));
+        }
+    }
+}
+
+auto BSTree::FindMaxSubTree(unique_ptr<TreeNode> currentRoot) {
+    if (currentRoot -> rightNode != nullptr) {
+        return this-> FindMaxSubTree(move(currentRoot->rightNode));
+    } else {
+        auto value = currentRoot->nodeValue;
+        if (currentRoot -> leftNode == nullptr) {
+            currentRoot = nullptr;    
+        } else {
+            currentRoot = currentRoot -> leftNode;
+        }
+        return value;
+    }
+}
+
+auto BSTree::FindMinSubTree(unique_ptr<TreeNode> currentRoot) {
+    if (currentRoot -> leftNode != nullptr) {
+        return this-> FindMinSubTree(move(currentRoot->leftNode));
+    } else {
+        auto value = currentRoot->nodeValue;
+        if (currentRoot -> rightNode == nullptr) {
+            currentRoot = nullptr;    
+        } else {
+            currentRoot = currentRoot -> rightNode;
+        }
+        return value;
+    }
+}
+
+int main() {
+    // Write C++ code here
+    
+    auto myTreeNode = make_unique<TreeNode>(5); // Root Node, we can use auto let the compiler deduce the type
+    // make_unique return a unique_ptr auto deleting pointer manage the object and return a new instance of TreeNode object
+    // and the type is not a TreeNode anymore it's a unique_ptr<TreeNode>
+    auto myTreeLeftNode = make_unique<TreeNode>(3); // Left Child Node
+    auto myTreeRightNode = make_unique<TreeNode>(8); // Right Child Node
+    
+    // node connection, this is a very important step to build a binary tree using linked list idea
+    myTreeNode->leftNode = move(myTreeLeftNode); // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
+    // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
+    // move(), transfer the pointer owner ship without copying the original data 
+    myTreeNode->rightNode = move(myTreeRightNode);
+    // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
+    cout << "Print a single node value " << myTreeNode->leftNode -> nodeValue  << endl;
+    
+    // BSTree emptyTree(nullptr);
+    BSTree emptyTree {}; // above line can be also in this way, using the  {} to initializing the instance of this class
+    emptyTree.Print();
+    
+    // to print the tree using { {}, nodeValue, {} } this format 
+    BSTree threeNodesTree{move(myTreeNode)};
+    threeNodesTree.Print();
+    
+    auto nodeFourth = make_unique<TreeNode>(4); 
+    threeNodesTree.Insert(move(nodeFourth));
+    
+    threeNodesTree.Print();
+    
+    auto nodeForCheck = make_unique<TreeNode>(4); 
+    cout << threeNodesTree.Contains(nodeForCheck) << endl; // here you can not pass the nodeFourth to this call again, since after the move method this unique pointer is nullptr
+    
+    return 0;
+}
