@@ -58,7 +58,6 @@ class BSTree {
         
         void RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot);
         
-        auto FindMaxSubTree(unique_ptr<TreeNode> currentRoot) -> int;
         auto FindMinSubTree(unique_ptr<TreeNode> currentRoot) -> int;
 };
 
@@ -151,16 +150,15 @@ void BSTree::Remove(const int& value) {
 void BSTree::RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot) {
     if (currentRoot->nodeValue == value) {
         // remove the node 
-        if (currentRoot -> leftNode == nullptr || currentRoot -> rightNode == nullptr) {
+        if (currentRoot -> leftNode == nullptr && currentRoot -> rightNode == nullptr) {
             currentRoot = nullptr;
-        } else if (currentRoot -> leftNode != nullptr || currentRoot -> rightNode == nullptr) {
-             // step 1: find  max value of leftSub tree, set that max value node to nullptr 
-             auto maxValue = this->FindMaxSubTree(move(currentRoot->leftNode));
-             // step 2: change root node value
-             currentRoot -> nodeValue = maxValue;
+        } else if (currentRoot -> leftNode != nullptr && currentRoot -> rightNode == nullptr) {
+             currentRoot = move(currentRoot->leftNode); // after this process the tree remains balanced since the removed node is the bigger than all the left sub tree, the new linked node still keeps the balance
+        } else if (currentRoot -> rightNode != nullptr && currentRoot -> rightNode == nullptr) {
+            currentRoot = move(currentRoot->rightNode);
         } else {
             // step 1: find  min value of rightSub tree, set that min value node to nullptr 
-             auto minValue = this->FindMinSubTree(move(currentRoot->rightNode));
+             auto minValue = this->FindMinSubTree(move(currentRoot));
              // step 2:  change root node value
              currentRoot -> nodeValue = minValue;
         }
@@ -181,20 +179,6 @@ void BSTree::RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> cur
         } else {
             this->RemoveRecursiveForSubTree(value, move(currentRoot->leftNode));
         }
-    }
-}
-
-auto BSTree::FindMaxSubTree(unique_ptr<TreeNode> currentRoot) -> int {
-    if (currentRoot -> rightNode != nullptr) {
-        return this-> FindMaxSubTree(move(currentRoot->rightNode));
-    } else {
-        auto value = currentRoot->nodeValue;
-        if (currentRoot -> leftNode == nullptr) {
-            currentRoot = nullptr;    
-        } else {
-            currentRoot = move(currentRoot -> leftNode);
-        }
-        return value;
     }
 }
 
