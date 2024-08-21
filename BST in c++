@@ -46,7 +46,7 @@ class BSTree {
         bool Contains(const unique_ptr<TreeNode>& node);
         // this method only does not need to modify the original node so pass by a const reference  
         
-        void Remove(const int& value); // remove the generic T type, and only add value as parameter to avoid create another new in the main
+        void Remove(int value); // remove the generic T type, and only add value as parameter to avoid create another new node in the main
     
     private:
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
@@ -56,9 +56,9 @@ class BSTree {
         
         bool ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root);
         
-        void RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot);
+        void RemoveRecursiveForSubTree(int value, unique_ptr<TreeNode> &currentRoot);
         
-        auto FindMinSubTree(unique_ptr<TreeNode> currentRoot) -> int;
+        auto FindMinSubTree(unique_ptr<TreeNode>& currentRoot) -> int;
 };
 
 void BSTree::Print() {
@@ -139,16 +139,24 @@ bool BSTree::ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const
     }
 }
 
-void BSTree::Remove(const int& value) {
-    if (this->rootAddress == nullptr) {
-        return;
-    } else {
-        this->RemoveRecursiveForSubTree(value, move(this->rootAddress));
+void BSTree::Remove(const int value) {
+    if (this->rootAddress) {
+        this->RemoveRecursiveForSubTree(value, this->rootAddress);
     }
 }
 
-void BSTree::RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> currentRoot) {
-    if (currentRoot->nodeValue == value) {
+void BSTree::RemoveRecursiveForSubTree(int value, unique_ptr<TreeNode>& currentRoot) {
+    if (currentRoot == nullptr) {
+        return;
+    }
+    
+    if (value > currentRoot->nodeValue) {
+        this->RemoveRecursiveForSubTree(value, currentRoot->rightNode);
+    } else if (value < currentRoot->nodeValue) {
+        this->RemoveRecursiveForSubTree(value, currentRoot->leftNode);
+    } else {
+    // currentRoot->nodeValue == value
+    // move function transfer the ownership, when passing by reference, there is no need use move function
         // remove the node 
         if (currentRoot -> leftNode == nullptr && currentRoot -> rightNode == nullptr) {
             currentRoot = nullptr;
@@ -158,33 +166,17 @@ void BSTree::RemoveRecursiveForSubTree(const int value, unique_ptr<TreeNode> cur
             currentRoot = move(currentRoot->rightNode);
         } else {
             // step 1: find  min value of rightSub tree, set that min value node to nullptr 
-             auto minValue = this->FindMinSubTree(move(currentRoot));
+             auto minValue = this->FindMinSubTree(currentRoot->rightNode);
              // step 2:  change root node value
              currentRoot -> nodeValue = minValue;
         }
         return;
     }    
-    
-    if (value < currentRoot->nodeValue) {
-        if (currentRoot->rightNode == nullptr) {
-            // " node value does not exist in the Tree during Remove operations"
-            return;
-        } else {
-            this->RemoveRecursiveForSubTree(value, move(currentRoot->rightNode));
-        }
-    } else {
-        if (currentRoot->leftNode == nullptr) {
-            // " node value does not exist in the Tree during Remove operations"
-            return;
-        } else {
-            this->RemoveRecursiveForSubTree(value, move(currentRoot->leftNode));
-        }
-    }
 }
 
-auto BSTree::FindMinSubTree(unique_ptr<TreeNode> currentRoot) -> int {
+auto BSTree::FindMinSubTree(unique_ptr<TreeNode>& currentRoot) -> int {
     if (currentRoot -> leftNode != nullptr) {
-        return this-> FindMinSubTree(move(currentRoot->leftNode));
+        return this-> FindMinSubTree(currentRoot->leftNode);
     } else {
         auto value = currentRoot->nodeValue;
         if (currentRoot -> rightNode == nullptr) {
@@ -228,10 +220,13 @@ int main() {
     
     auto nodeForCheck = make_unique<TreeNode>(4); 
     cout << threeNodesTree.Contains(nodeForCheck) << endl; // here you can not pass the nodeFourth to this call again, since after the move method this unique pointer is nullptr
-    
+    threeNodesTree.Print();
+
     threeNodesTree.Remove(4);
-    
+    threeNodesTree.Print();
     auto nodeForCheck2 = make_unique<TreeNode>(4); 
     cout << threeNodesTree.Contains(nodeForCheck2) << endl;
+    
+
     return 0;
 }
