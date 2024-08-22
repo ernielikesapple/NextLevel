@@ -34,7 +34,8 @@ class BSTree {
         BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
         // whenever we need to assign the pointer a new value use move function to modify the actual content directly
         void Print();   // to print the tree as string, each node is "{ nodeValue }"
-        void Insert(unique_ptr<TreeNode> newNode); // insert a node to the BST
+        void Insert(const int value); // insert a node to the BST
+        // insert the actual value not a node, in order not to create a new one
     // void Print() {
     //     if (this->rootAddress == nullptr) {
     //         cout << "{}" << endl;
@@ -52,7 +53,7 @@ class BSTree {
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
         string PrintTreeNode(const TreeNode* node);
         // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
-        void InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot);
+        void InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& currentRoot);
         
         bool ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root);
         
@@ -74,38 +75,41 @@ void BSTree::Print() {
 string BSTree::PrintTreeNode(const TreeNode* node) {
     string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode.get()) : "{}";  // we need to pass the child do the recussion
     string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode.get()) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
-    string result = "{" + leftNodeString + "," + to_string(node->nodeValue) + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
+    string result = "{" + to_string(node->nodeValue) + "," + leftNodeString + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
     return result;
 }
 
-void BSTree::Insert(unique_ptr<TreeNode> newNode) {
+void BSTree::Insert(const int value) {
     if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
+        auto newNode = make_unique<TreeNode>(value);
         this->rootAddress = move(newNode);
     } else {
-        this-> InsertRecursiveForSubTree(move(newNode), this->rootAddress);
+        this-> InsertRecursiveForSubTree(value, this->rootAddress);
     }
 }
 
-void BSTree::InsertRecursiveForSubTree(unique_ptr<TreeNode> node, unique_ptr<TreeNode>& currentRoot) {
+void BSTree::InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& currentRoot) {
     // since we need to modify the value passing by outside the scope so we need to pass this current root node by reference to modify the original content
     
-    if (currentRoot->nodeValue > node->nodeValue) {
+    if (currentRoot->nodeValue > value) {
         // if the new node value is smaller than the root node we need to insert this new to the left child tree
         if (currentRoot->leftNode == nullptr) {
             // if this node does not have a left node then do the insertion 
-            currentRoot->leftNode = move(node);
+            auto newNode = make_unique<TreeNode>(value);
+            currentRoot->leftNode = move(newNode);
         } else {
-            this->InsertRecursiveForSubTree(move(node), currentRoot->leftNode);
+            this->InsertRecursiveForSubTree(value, currentRoot->leftNode);
         }
         return;
-    } else if(currentRoot->nodeValue == node->nodeValue) {
+    } else if(currentRoot->nodeValue == value) {
         return;
-    } else if(currentRoot->nodeValue < node->nodeValue) {
+    } else if(currentRoot->nodeValue < value) {
         if (currentRoot->rightNode == nullptr) {
             // if this node does not have a left node then do the insertion 
-            currentRoot->rightNode = move(node);
+            auto newNode = make_unique<TreeNode>(value);
+            currentRoot->rightNode = move(newNode);
         } else {
-            this->InsertRecursiveForSubTree(move(node), currentRoot->rightNode);
+            this->InsertRecursiveForSubTree(value, currentRoot->rightNode);
         }
         return;
     }
@@ -213,9 +217,10 @@ int main() {
     BSTree threeNodesTree{move(myTreeNode)};
     threeNodesTree.Print();
     
-    auto nodeFourth = make_unique<TreeNode>(4); 
-    threeNodesTree.Insert(move(nodeFourth));
-    
+    threeNodesTree.Insert(4);
+    threeNodesTree.Insert(2);
+    threeNodesTree.Insert(24);
+
     threeNodesTree.Print();
     
     auto nodeForCheck = make_unique<TreeNode>(4); 
