@@ -44,7 +44,7 @@ class BSTree {
     //     }
     // }
     // we can define the class outside the class as well
-        bool Contains(const unique_ptr<TreeNode>& node);
+        bool Contains(const int value) const;
         // this method only does not need to modify the original node so pass by a const reference  
         
         void Remove(int value); // remove the generic T type, and only add value as parameter to avoid create another new node in the main
@@ -55,7 +55,7 @@ class BSTree {
         // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
         void InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& currentRoot);
         
-        bool ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root);
+        bool ContainsRecursiveForSubTree(const int value, const unique_ptr<TreeNode> &root) const;
         
         void RemoveRecursiveForSubTree(int value, unique_ptr<TreeNode> &currentRoot);
         
@@ -115,30 +115,30 @@ void BSTree::InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& cu
     }
 }
 
-bool BSTree::Contains(const unique_ptr<TreeNode> &node) {
+bool BSTree::Contains(const int value) const {
     if (this->rootAddress == nullptr) {
         return false;
     } else {
-        return this->ContainsRecursiveForSubTree(node, this->rootAddress);
+        return this->ContainsRecursiveForSubTree(value, this->rootAddress);
     }
 }
 
-bool BSTree::ContainsRecursiveForSubTree(const unique_ptr<TreeNode> &node, const unique_ptr<TreeNode> &root) {
-    if (root->nodeValue == node->nodeValue) {
+bool BSTree::ContainsRecursiveForSubTree(const int value, const unique_ptr<TreeNode> &root) const {
+    if (root->nodeValue == value) {
         return true; 
     } 
     
-    if (root->nodeValue < node->nodeValue) {
+    if (root->nodeValue < value) {
         if (root->rightNode == nullptr) {
             return false;
         } else {
-            return this->ContainsRecursiveForSubTree(node, root->rightNode);
+            return this->ContainsRecursiveForSubTree(value, root->rightNode);
         }
     } else {
         if (root->leftNode == nullptr) {
             return false;
         } else {
-            return this->ContainsRecursiveForSubTree(node, root->leftNode);
+            return this->ContainsRecursiveForSubTree(value, root->leftNode);
         }
     }
 }
@@ -223,14 +223,13 @@ int main() {
 
     threeNodesTree.Print();
     
-    auto nodeForCheck = make_unique<TreeNode>(4); 
-    cout << threeNodesTree.Contains(nodeForCheck) << endl; // here you can not pass the nodeFourth to this call again, since after the move method this unique pointer is nullptr
+    cout << threeNodesTree.Contains(4) << endl; // here you can not pass the nodeFourth to this call again, since after the move method this unique pointer is nullptr
     threeNodesTree.Print();
 
     threeNodesTree.Remove(4);
     threeNodesTree.Print();
-    auto nodeForCheck2 = make_unique<TreeNode>(4); 
-    cout << threeNodesTree.Contains(nodeForCheck2) << endl;
+    
+    cout << threeNodesTree.Contains(4) << endl;
     
 
     return 0;
