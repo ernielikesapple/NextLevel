@@ -33,7 +33,7 @@ class BSTree {
         // }
         BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
         // whenever we need to assign the pointer a new value use move function to modify the actual content directly
-        void Print();   // to print the tree as string, each node is "{ nodeValue }"
+        void Print() const;   // to print the tree as string, each node is "{ nodeValue }"
         void Insert(const int value); // insert a node to the BST
         // insert the actual value not a node, in order not to create a new one
     // void Print() {
@@ -51,7 +51,7 @@ class BSTree {
     
     private:
         unique_ptr<TreeNode> rootAddress; // private class member can only access through public method 
-        string PrintTreeNode(const TreeNode* node);
+        string PrintTreeNode(const TreeNode* node) const;
         // in Print there is no need to modify the ownership of TreeNode so no need pass the unique_ptr, so just use a const raw pointer
         void InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& currentRoot);
         
@@ -62,7 +62,7 @@ class BSTree {
         auto FindMinSubTree(unique_ptr<TreeNode>& currentRoot) -> int;
 };
 
-void BSTree::Print() {
+void BSTree::Print() const {
     cout << "Print the whole tree as string ";
     if (this->rootAddress == nullptr) {
         cout << "{}" << endl;
@@ -72,7 +72,7 @@ void BSTree::Print() {
     }
 }
 
-string BSTree::PrintTreeNode(const TreeNode* node) {
+string BSTree::PrintTreeNode(const TreeNode* node) const {
     string leftNodeString = (node->leftNode!=nullptr) ? this->PrintTreeNode(node->leftNode.get()) : "{}";  // we need to pass the child do the recussion
     string rightNodeString = node->rightNode ? this->PrintTreeNode(node->rightNode.get()) : "{}"; // notice the condition order can also be just the variable itself (node->rightNode) to check if it exists
     string result = "{" + to_string(node->nodeValue) + "," + leftNodeString + "," + rightNodeString + "}"; // iterate the tree node using the order ‘left, root, right’, this order can also be 'root, left, right' or 'left, right, root'
@@ -230,6 +230,11 @@ int main() {
     threeNodesTree.Print();
     
     cout << threeNodesTree.Contains(4) << endl;
+    
+    auto rootTreeNode = make_unique<TreeNode>(3);
+    BSTree oneNodeTree{move(rootTreeNode)};
+    oneNodeTree.Remove(3);
+    oneNodeTree.Print();
     
 
     return 0;
