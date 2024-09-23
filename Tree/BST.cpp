@@ -31,7 +31,7 @@ class BSTree {
         // BSTree (TreeNode* rootNode) {
         //     rootAddress = rootNode;
         // }
-        BSTree (unique_ptr<TreeNode> rootNode): rootAddress(move(rootNode)) {}
+        BSTree (unique_ptr<TreeNode> rootNode): rootAddress(std::move(rootNode)) {}
         // whenever we need to assign the pointer a new value use move function to modify the actual content directly
         void Print() const;   // to print the tree as string, each node is "{ nodeValue }"
         void Insert(const int value); // insert a node to the BST
@@ -82,7 +82,7 @@ string BSTree::PrintTreeNode(const TreeNode* node) const {
 void BSTree::Insert(const int value) {
     if (this->rootAddress == nullptr) { // nullptr is pointer, NULL is an int means 0 comes from C, but it can also use as nullptr in some cases
         auto newNode = make_unique<TreeNode>(value);
-        this->rootAddress = move(newNode);
+        this->rootAddress = std::move(newNode);
     } else {
         this-> InsertRecursiveForSubTree(value, this->rootAddress);
     }
@@ -96,7 +96,7 @@ void BSTree::InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& cu
         if (currentRoot->leftNode == nullptr) {
             // if this node does not have a left node then do the insertion 
             auto newNode = make_unique<TreeNode>(value);
-            currentRoot->leftNode = move(newNode);
+            currentRoot->leftNode = std::move(newNode);
         } else {
             this->InsertRecursiveForSubTree(value, currentRoot->leftNode);
         }
@@ -107,7 +107,7 @@ void BSTree::InsertRecursiveForSubTree(const int value, unique_ptr<TreeNode>& cu
         if (currentRoot->rightNode == nullptr) {
             // if this node does not have a left node then do the insertion 
             auto newNode = make_unique<TreeNode>(value);
-            currentRoot->rightNode = move(newNode);
+            currentRoot->rightNode = std::move(newNode);
         } else {
             this->InsertRecursiveForSubTree(value, currentRoot->rightNode);
         }
@@ -165,9 +165,9 @@ void BSTree::RemoveRecursiveForSubTree(int value, unique_ptr<TreeNode>& currentR
         if (currentRoot -> leftNode == nullptr && currentRoot -> rightNode == nullptr) {
             currentRoot = nullptr;
         } else if (currentRoot -> leftNode != nullptr && currentRoot -> rightNode == nullptr) {
-             currentRoot = move(currentRoot->leftNode); // after this process the tree remains balanced since the removed node is the bigger than all the left sub tree, the new linked node still keeps the balance
+             currentRoot = std::move(currentRoot->leftNode); // after this process the tree remains balanced since the removed node is the bigger than all the left sub tree, the new linked node still keeps the balance
         } else if (currentRoot -> rightNode != nullptr && currentRoot -> rightNode == nullptr) {
-            currentRoot = move(currentRoot->rightNode);
+            currentRoot = std::move(currentRoot->rightNode);
         } else {
             // step 1: find  min value of rightSub tree, set that min value node to nullptr 
              auto minValue = this->FindMinSubTree(currentRoot->rightNode);
@@ -186,7 +186,7 @@ auto BSTree::FindMinSubTree(unique_ptr<TreeNode>& currentRoot) -> int {
         if (currentRoot -> rightNode == nullptr) {
             currentRoot = nullptr;    
         } else {
-            currentRoot = move(currentRoot -> rightNode);
+            currentRoot = std::move(currentRoot -> rightNode);
         }
         return value;
     }
@@ -202,10 +202,10 @@ int main() {
     auto myTreeRightNode = make_unique<TreeNode>(8); // Right Child Node
     
     // node connection, this is a very important step to build a binary tree using linked list idea
-    myTreeNode->leftNode = move(myTreeLeftNode); // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
+    myTreeNode->leftNode = std::move(myTreeLeftNode); // myTreeNode is a root node so when it accesses the child node it uses . symbol, since it is not a pointer 
     // we need to use & symbol before myTreeLeftNode to pass the address of the Left Child Node to the root node left child pointer
     // move(), transfer the pointer owner ship without copying the original data 
-    myTreeNode->rightNode = move(myTreeRightNode);
+    myTreeNode->rightNode = std::move(myTreeRightNode);
     // cout << myTreeNode.leftNode -> nodeValue  << endl;   since the leftNode variable is a pointer so we need to use -> symbol to access the node value
     cout << "Print a single node value " << myTreeNode->leftNode -> nodeValue  << endl;
     
@@ -214,7 +214,7 @@ int main() {
     emptyTree.Print();
     
     // to print the tree using { {}, nodeValue, {} } this format 
-    BSTree threeNodesTree{move(myTreeNode)};
+    BSTree threeNodesTree{std::move(myTreeNode)};
     threeNodesTree.Print();
     
     threeNodesTree.Insert(4);
@@ -232,7 +232,7 @@ int main() {
     cout << threeNodesTree.Contains(4) << endl;
     
     auto rootTreeNode = make_unique<TreeNode>(3);
-    BSTree oneNodeTree{move(rootTreeNode)};
+    BSTree oneNodeTree{std::move(rootTreeNode)};
     oneNodeTree.Remove(3);
     oneNodeTree.Print();
     
