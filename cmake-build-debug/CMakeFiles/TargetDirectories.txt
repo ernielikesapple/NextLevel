@@ -1,0 +1,3 @@
+/Users/ernie/WorkSpace/NextLevel/cmake-build-debug/CMakeFiles/NextLevel.dir
+/Users/ernie/WorkSpace/NextLevel/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/ernie/WorkSpace/NextLevel/cmake-build-debug/CMakeFiles/rebuild_cache.dir
